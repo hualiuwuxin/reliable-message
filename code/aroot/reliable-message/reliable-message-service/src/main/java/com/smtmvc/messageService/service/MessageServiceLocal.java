@@ -36,6 +36,21 @@ public interface MessageServiceLocal extends MessageService {
 	 */
 	int deleteMessage( String uuid );
 	
+	/**
+	 * 发送失败
+	 * 
+	 * @return
+	 */
+	int sendFailure(String uuid );
+	
+	
+	/**
+	 * 确认失败
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	int confirmMessage(String uuid );
 	
 	
 

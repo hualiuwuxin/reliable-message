@@ -3,12 +3,15 @@ package com.smtmvc.messageService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
-import com.smtmvc.messageService.task.ConfirmTasks;
+import com.smtmvc.messageService.mq.ActiveMQService;
+import com.smtmvc.messageService.mq.ActiveMQServiceHolder;
+import com.smtmvc.messageService.task.ReSendTasks;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -17,20 +20,21 @@ import com.smtmvc.messageService.task.ConfirmTasks;
 public class MessageServiceApplication {
 
 	public static void main(String[] args) throws InterruptedException {
-		SpringApplication.run(MessageServiceApplication.class, args);
-		
-		//初次启动应把 带确认的都 处理一次
+		ConfigurableApplicationContext app = SpringApplication.run(MessageServiceApplication.class, args);
 		
 		
-		
-		Thread confirmTasksThread = new Thread(  new ConfirmTasks());
-		confirmTasksThread.start();
-		
-		
+		ActiveMQServiceHolder.setActiveMQService( app.getBean( ActiveMQService.class ) );
 	}
 	
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
+	
+	@Bean
+	public ReSendTasks confirmTasks() {
+		return new ReSendTasks();
+	}
+	
+	
 }

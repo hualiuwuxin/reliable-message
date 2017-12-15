@@ -26,7 +26,7 @@
 	<!-- insert -->
 	<insert id="insert" parameterType="com.smtmvc.user.model.User" keyProperty="id" useGeneratedKeys="true">
 		insert into user ( name,uuid )
-		values (  #{name,jdbcType=CHAR} , uuid)
+		values (  #{name,jdbcType=CHAR} , #{uuid,jdbcType=CHAR})
 	</insert>
 	
 	<insert id="insertSelective" parameterType="com.smtmvc.user.model.User">

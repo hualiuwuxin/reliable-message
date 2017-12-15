@@ -5,13 +5,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.smtmvc.messageService.model.Message;
+import com.smtmvc.messageService.service.fallback.MessageServiceFallback;
 
 /**
  * 远程接口
  * @author ZHANGYUKUN
  *
  */
-@FeignClient(name = "reliable-message-service")
+@FeignClient(name = "reliable-message-service",fallback=MessageServiceFallback.class )
 public interface MessageService {
 	
 	/**

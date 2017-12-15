@@ -29,7 +29,7 @@ public class ActiveMQService {
 		}
 
 		Destination destination = new ActiveMQQueue(message.getDestination());
-		jmsTemplate.convertAndSend(destination, message);
+		jmsTemplate.convertAndSend(destination, message );
 	}
 
 }

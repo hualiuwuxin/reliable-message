@@ -24,3 +24,24 @@ eureka:
       defaultZone: http://root:root@localhost:8761/eureka/
   instance: 
     prefer-ip-address: false         
+
+#系统配置
+reliableMessage: 
+    retry: 
+      maxConfirmTime: 7
+      maxSendTime: 7
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

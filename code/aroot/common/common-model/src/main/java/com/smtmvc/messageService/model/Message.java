@@ -6,6 +6,7 @@ import java.util.Date;
 import com.smtmvc.messageService.model.enume.MessageStatus;
 
 public class Message implements Serializable {
+
 	private static final long serialVersionUID = -7482266728146094335L;
 
 	private Long id;
@@ -127,6 +128,31 @@ public class Message implements Serializable {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Message other = (Message) obj;
+		if (uuid == null) {
+			if (other.uuid != null)
+				return false;
+		} else if (!uuid.equals(other.uuid))
+			return false;
+		return true;
 	}
 
 	public static Message newInstance() {

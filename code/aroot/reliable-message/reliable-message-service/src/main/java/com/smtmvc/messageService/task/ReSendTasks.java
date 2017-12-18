@@ -15,18 +15,26 @@ public class ReSendTasks implements Runnable {
 		return tasks;
 	}
 
-	public static void setTasks(DelayQueue<ReSendTask> tasks) {
-		ReSendTasks.tasks = tasks;
-	}
-
-	
 	public void put( ReSendTask reSendTask) {
 		tasks.put(reSendTask);
 	}
 	
+	public boolean contains(ReSendTask reSendTask) {
+		return ReSendTasks.tasks.contains( reSendTask );
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * 
-	 * 暂时就这么些,后面换成线程池
+	 * 暂时就这么写,后面换成线程池
 	 */
 	@Override
 	public void run() {
@@ -42,11 +50,6 @@ public class ReSendTasks implements Runnable {
 		}while(true);
 		
 	}
-
-	
-	
-	
-	
 	
 
 }

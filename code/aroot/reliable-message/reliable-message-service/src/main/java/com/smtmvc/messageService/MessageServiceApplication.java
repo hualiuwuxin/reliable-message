@@ -10,7 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
 import com.smtmvc.messageService.mq.ActiveMQService;
-import com.smtmvc.messageService.mq.ActiveMQServiceHolder;
+import com.smtmvc.messageService.mq.ServiceHolder;
+import com.smtmvc.messageService.service.MessageServiceLocal;
 import com.smtmvc.messageService.task.ReSendTasks;
 
 @SpringBootApplication
@@ -23,7 +24,8 @@ public class MessageServiceApplication {
 		ConfigurableApplicationContext app = SpringApplication.run(MessageServiceApplication.class, args);
 		
 		
-		ActiveMQServiceHolder.setActiveMQService( app.getBean( ActiveMQService.class ) );
+		ServiceHolder.setActiveMQService( app.getBean( ActiveMQService.class ) );
+		ServiceHolder.setMessageService( app.getBean( MessageServiceLocal.class ) );
 	}
 	
 	@Bean

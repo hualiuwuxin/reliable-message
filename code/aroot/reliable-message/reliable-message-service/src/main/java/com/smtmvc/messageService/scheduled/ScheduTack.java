@@ -18,7 +18,7 @@ public class ScheduTack {
 		messageService.scanAndConfirm();
     }
 	
-	@Scheduled(cron="30 * * * * *")
+	@Scheduled(cron="10,20,30,40,50,0 * * * * *")
     public void cronSend(){
 		System.out.println( "重发任务执行------------------" );
 		messageService.scanAndReSendToMQ();

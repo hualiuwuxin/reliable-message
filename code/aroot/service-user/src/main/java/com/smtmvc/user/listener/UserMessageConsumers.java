@@ -23,7 +23,10 @@ public class UserMessageConsumers {
 	public void consume(Message message) {
 		User user = JSONObject.parseObject( message.getContent() ,  User.class );
 		
-		userService.insert( user );
+		
+		if( userService.queryByUUID( user.getUuid() ) == null ) {
+			userService.insert( user );
+		}
 	
 		messageService.ack(message.getUuid());
 	}

@@ -1,6 +1,7 @@
 package com.smtmvc.messageService.service;
 
 import com.smtmvc.messageService.model.Message;
+import com.smtmvc.messageService.model.enume.SendStatus;
 
 /**
  * 本地接口
@@ -51,6 +52,13 @@ public interface MessageServiceLocal extends MessageService {
 	 * @return
 	 */
 	int confirmMessage(String uuid );
+
+
+	/**
+	 * 做发送记录
+	 * @param message
+	 */
+	void addSendRecord(Message message, SendStatus sendStatus);
 	
 	
 

@@ -104,21 +104,22 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	@Override
 	public void sendToMQ(Message message)  {
 		
-		SendStatus sendStatus = SendStatus.SUCCEED;
-		try {
-			activeMQService.send( message );
-		}catch (Exception e) {
-			sendStatus= SendStatus.TIMEOUT;
+		
+		if( message.getSendTime() >= reliableMessageRetry.getMaxSendTime() ) {
+			sendFailure( message.getUuid() );
+			return;
 		}
 		
-		addSendRecord( message,sendStatus);
+		ReSendTask reSendTask = new ReSendTask(  calculateSendTime( message.getSendTime() )  , message );
+		
+		if( !reSendTasks.contains( reSendTask ) ) {
+			reSendTasks.put( reSendTask );
+		}
+		
 	}
 
-	/**
-	 * 做发送记录
-	 * @param message
-	 */
-	private void addSendRecord(Message message,SendStatus sendStatus) {
+	@Override
+	public void addSendRecord(Message message,SendStatus sendStatus) {
 		
 		if(SendStatus.SUCCEED.equals(  sendStatus )  ) {
 			messageMapper.addSendTime( message.getUuid() );
@@ -138,15 +139,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 		List<Message> list =  messageMapper.queryByStatus( MessageStatus.SENDED );
 		
 		for(Message message :  list) {
-			
-			if( message.getSendTime() >= reliableMessageRetry.getMaxSendTime() ) {
-				sendFailure( message.getUuid() );
-			}
-			
-			ReSendTask reSendTask = new ReSendTask(  calculateSendTime( message.getSendTime() )  , message );
-			
-			
-			reSendTasks.put( reSendTask );
+			sendToMQ(message);
 		}
 		
 	}

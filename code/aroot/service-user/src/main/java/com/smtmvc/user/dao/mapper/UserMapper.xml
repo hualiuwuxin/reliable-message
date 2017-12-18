@@ -18,6 +18,14 @@
 		where id = #{id,jdbcType=BIGINT}
 	</select>
 	
+	<select id="queryByUUID" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from user
+		where uuid = #{uuid,jdbcType=CHAR}
+	</select>
+	
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
 		delete from user
 		where id = #{id,jdbcType=BIGINT}

@@ -3,10 +3,9 @@ package com.smtmvc.messageService.task;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.stereotype.Component;
-
 import com.smtmvc.messageService.model.Message;
-import com.smtmvc.messageService.mq.ActiveMQServiceHolder;
+import com.smtmvc.messageService.model.enume.SendStatus;
+import com.smtmvc.messageService.mq.ServiceHolder;
 
 public class ReSendTask implements Delayed,Runnable {
 	
@@ -44,7 +43,22 @@ public class ReSendTask implements Delayed,Runnable {
 
 	@Override
 	public void run() {
-		ActiveMQServiceHolder.getActiveMQService().send(message);
+		SendStatus sendStatus = SendStatus.SUCCEED;
+		
+		try {
+			ServiceHolder.getActiveMQService().send(message);
+		}catch (Exception e) {
+			sendStatus= SendStatus.TIMEOUT;
+			System.out.println("ActiveMQ出问题了...........");
+			e.printStackTrace();
+		}
+		
+		try {
+			ServiceHolder.getMessageService().addSendRecord( message,sendStatus);
+		}catch (Exception e) {
+			System.out.println("做发送记录出问题了...........");
+			e.getMessage();
+		}
 	}
 
 	public Message getMessage() {
@@ -53,6 +67,31 @@ public class ReSendTask implements Delayed,Runnable {
 
 	public void setMessage(Message message) {
 		this.message = message;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((message == null) ? 0 : message.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReSendTask other = (ReSendTask) obj;
+		if (message == null) {
+			if (other.message != null)
+				return false;
+		} else if (!message.equals(other.message))
+			return false;
+		return true;
 	}
 
 }

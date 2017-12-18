@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.smtmvc.messageService.model.Message;
 import com.smtmvc.user.dao.UserMapper;
 import com.smtmvc.user.model.User;
 import com.smtmvc.user.service.UserService;
@@ -23,6 +24,10 @@ public class UserServiceImpl implements UserService {
 		}else {
 			return -1l;
 		}
+	}
+
+	public User queryByUUID(String uuid) {
+		return userDao.queryByUUID(uuid);
 	}
 
 }

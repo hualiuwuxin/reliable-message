@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.smtmvc.messageService.model.Message;
 import com.smtmvc.messageService.service.MessageService;
 import com.smtmvc.order.model.Order;

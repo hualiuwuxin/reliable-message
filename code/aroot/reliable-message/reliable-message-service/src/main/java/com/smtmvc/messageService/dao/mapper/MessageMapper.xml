@@ -62,6 +62,7 @@
 			</if>
 		</set>
 		where uuid = #{uuid}
+		and status != #{status,jdbcType=CHAR}
 	</update>
 
 	<!-- 通过UUID删除 -->

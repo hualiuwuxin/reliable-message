@@ -148,7 +148,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	        page = (Page<Message>)  messageMapper.querySendedByStatus( MessageStatus.SENDED,sendTime );
 	        
 			for(Message message :  page) {
-				sendToMQ(message);
+				//sendToMQ(message);
 			}
 		}while( page.getEndRow() < page.getTotal() );
 		
@@ -235,8 +235,8 @@ public class MessageServiceImpl implements MessageServiceLocal {
 			throw new RuntimeException("无效的UUID");
 		}
 
-		
 		messageMapper.addConfirmTime( uuid );
+		messgae.setConfirmTime( messgae.getConfirmTime() + 1 );
 		
 		MessageConfirmRecord messageConfirmRecord = MessageConfirmRecord.newInstance(messgae);
 		messageConfirmRecord.setStatus(  confirmStatus  );

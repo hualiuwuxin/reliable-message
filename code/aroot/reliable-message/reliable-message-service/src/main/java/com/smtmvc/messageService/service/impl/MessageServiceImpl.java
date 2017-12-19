@@ -1,10 +1,5 @@
 package com.smtmvc.messageService.service.impl;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.smtmvc.messageService.config.ReliableMessageRetry;
 import com.smtmvc.messageService.dao.MessageConfirmRecordMapper;
 import com.smtmvc.messageService.dao.MessageMapper;
@@ -23,10 +20,11 @@ import com.smtmvc.messageService.model.MessageSendRecord;
 import com.smtmvc.messageService.model.enume.ConfirmStatus;
 import com.smtmvc.messageService.model.enume.MessageStatus;
 import com.smtmvc.messageService.model.enume.SendStatus;
-import com.smtmvc.messageService.mq.ActiveMQService;
 import com.smtmvc.messageService.service.MessageServiceLocal;
-import com.smtmvc.messageService.task.ReSendTask;
-import com.smtmvc.messageService.task.ReSendTasks;
+import com.smtmvc.messageService.service.mq.ActiveMQService;
+import com.smtmvc.messageService.task.ConfirmMessageTask;
+import com.smtmvc.messageService.task.MessageTasks;
+import com.smtmvc.messageService.task.ReSendMessageTask;
 
 @RestController
 public class MessageServiceImpl implements MessageServiceLocal {
@@ -47,7 +45,10 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	ReliableMessageRetry reliableMessageRetry;
 	
 	@Autowired
-	ReSendTasks reSendTasks;
+	MessageTasks messageTasks;
+	
+	@Autowired
+	RestTemplate restTemplate;
 	
 
 	@PutMapping("sendPretreatmentMessage")
@@ -110,10 +111,10 @@ public class MessageServiceImpl implements MessageServiceLocal {
 			return;
 		}
 		
-		ReSendTask reSendTask = new ReSendTask(  calculateSendTime( message.getSendTime() )  , message );
+		ReSendMessageTask reSendMessageTask = new ReSendMessageTask(  message );
 		
-		if( !reSendTasks.contains( reSendTask ) ) {
-			reSendTasks.put( reSendTask );
+		if( !messageTasks.contains( reSendMessageTask ) ) {
+			messageTasks.put( reSendMessageTask );
 		}
 		
 	}
@@ -123,7 +124,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 		
 		if(SendStatus.SUCCEED.equals(  sendStatus )  ) {
 			messageMapper.addSendTime( message.getUuid() );
-			message.setSendTime( message.getSendTime()  );
+			message.setSendTime( message.getSendTime()+1  );
 		}
 		
 		
@@ -135,56 +136,51 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	
 
 	@Override
-	public void scanAndReSendToMQ() {
-		List<Message> list =  messageMapper.queryByStatus( MessageStatus.SENDED );
+	public void scanAndReSendToMQ(Integer  sendTime) {
+		int pageNum = 0;
+		int pageSize = 10;
 		
-		for(Message message :  list) {
-			sendToMQ(message);
-		}
+		Page<Message> page = new Page<>( pageNum , pageSize );
+		do {
+			page.setPageNum( page.getPageNum() + 1 );
+	        PageHelper.startPage( page.getPageNum() ,  page.getPageSize() );
+	        
+	        page = (Page<Message>)  messageMapper.querySendedByStatus( MessageStatus.SENDED,sendTime );
+	        
+			for(Message message :  page) {
+				sendToMQ(message);
+			}
+		}while( page.getEndRow() < page.getTotal() );
 		
 	}
 	
-	/**
-	 * 计算发送时间
-	 * @return
-	 */
-	private long calculateSendTime(int count ) {
-		
-		int interval = 0;
-		
-		if( count == 0 ) {
-			interval = 0;
-		}else if( count == 1 ) {
-			interval = 1;
-		}else if( count == 2 ) {
-			interval = 2;
-		}else if( count == 3 ) {
-			interval = 5;
-		}else if( count == 4 ) {
-			interval = 10;
-		}else if( count == 5 ) {
-			interval = 30;
-		}else if( count == 6 ) {
-			interval = 60;
-		}
-		
-		return TimeUnit.NANOSECONDS.convert( interval ,  TimeUnit.MINUTES ) ;
-	}
+	
 	
 	
 
 	@Override
-	public void scanAndConfirm() {
-		List<Message> list =  messageMapper.queryByStatus( MessageStatus.WAITING_CONFIRM );
-		for(Message message : list  ) {
-			tryConfirm( message );
-		}
+	public void scanAndConfirm(Integer  confirmTime) {
 		
+		int pageNum = 0;
+		int pageSize = 10;
+		
+		Page<Message> page = new Page<>( pageNum , pageSize );
+		do {
+			page.setPageNum( page.getPageNum() + 1 );
+			
+	        PageHelper.startPage( page.getPageNum() ,  page.getPageSize() );
+	        
+	        page = (Page<Message>)messageMapper.queryWaitingConfirmByStatus( MessageStatus.WAITING_CONFIRM , confirmTime );
+	        
+	        for(Message message : page  ) {
+				tryConfirm( message );
+			}
+			 
+		}while( page.getEndRow() < page.getTotal() );
 		
 	}
 	
 	
-	ExecutorService confirmThreadPool = Executors.newFixedThreadPool(10);
 	
 	/**
 	 * 没有打到最大尝试次数的就去确认,到达最大次数的就标记未过期
@@ -192,20 +188,11 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	 */
 	private void tryConfirm(Message message  ) {
 		
-		confirmThreadPool.execute(new Runnable() {
-			@Override
-			public void run() {
-				
-				if( message.getConfirmTime() >= reliableMessageRetry.getMaxConfirmTime() ) {
-					
-					confirmMessage( message.getUuid() );
-				}
-				
-				ConfirmStatus confirmStatus = httpInvoking( message );
-				afterConfirm( confirmStatus, message.getUuid() );
-				
-			}
-		});
+		ConfirmMessageTask confirmMessageTask = new ConfirmMessageTask( message );
+		
+		if( !messageTasks.contains( confirmMessageTask ) ) {
+			messageTasks.put( confirmMessageTask );
+		}
 		
 	}
 	
@@ -215,7 +202,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	 * @param uuid
 	 */
 	@Transactional
-	private void afterConfirm(ConfirmStatus confirmStatus, String uuid) {
+	public void afterConfirm(ConfirmStatus confirmStatus, String uuid) {
 		
 		addConfirmRecord(uuid,confirmStatus);
 		
@@ -235,11 +222,14 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	
 	/**
 	 * 做询问记录
+	 * 备注：必须执行在内嵌事物中
+	 *   
 	 * @param uuid
 	 * @param confirmStatus 
 	 */
 	@Transactional(propagation=Propagation.MANDATORY)
-	private void addConfirmRecord(String uuid, ConfirmStatus confirmStatus) {
+	@Override
+	public void addConfirmRecord(String uuid, ConfirmStatus confirmStatus) {
 		Message messgae = 	messageMapper.selectByUUID( uuid );
 		if(  messgae == null ) {
 			throw new RuntimeException("无效的UUID");
@@ -254,14 +244,9 @@ public class MessageServiceImpl implements MessageServiceLocal {
 		
 	}
 	
-	@Autowired
-	RestTemplate restTemplate;
-
-	/**
-	 * 发送http 请求 ,暂时还没实现
-	 * @param message
-	 */
-	private ConfirmStatus httpInvoking(Message  message) {
+	
+	@Override
+	public ConfirmStatus httpInvoking(Message  message) {
 		String url ="http://" + message.getConfirmUrl()+"/" + message.getUuid();
 		
 		System.out.println( "http 请求已发送:" + url );
@@ -279,7 +264,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	}
 
 	@Override
-	public int confirmMessage(String uuid) {
+	public int confirmFailureMessage(String uuid) {
 		return messageMapper.changeStatus(uuid, MessageStatus.CONFIRM_FAILURE);
 	}
 	

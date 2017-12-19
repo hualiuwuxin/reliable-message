@@ -76,6 +76,22 @@ public interface MessageMapper {
 	 */
 	void addSendTime(String uuid);
 
+	
+	/**
+	 * 查询已发送,通过发送次数查询
+	 * @param status
+	 * @param sendTime
+	 * @return
+	 */
+	List<Message> querySendedByStatus(@Param( "status") MessageStatus status,@Param("sendTime") int sendTime);
+	
+	/**
+	 * 查询待确认,通过发送次数查询
+	 * @param status
+	 * @return
+	 */
+	List<Message> queryWaitingConfirmByStatus(@Param( "status") MessageStatus status,@Param("confirmTime") int confirmTime);
+
 
 
 }

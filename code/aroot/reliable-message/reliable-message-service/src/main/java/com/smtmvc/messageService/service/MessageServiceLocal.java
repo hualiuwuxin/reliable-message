@@ -1,6 +1,7 @@
 package com.smtmvc.messageService.service;
 
 import com.smtmvc.messageService.model.Message;
+import com.smtmvc.messageService.model.enume.ConfirmStatus;
 import com.smtmvc.messageService.model.enume.SendStatus;
 
 /**
@@ -21,13 +22,13 @@ public interface MessageServiceLocal extends MessageService {
 	/**
 	 * 把应该重发到mq 的重发到mq
 	 */
-	void scanAndReSendToMQ();
+	void scanAndReSendToMQ(Integer  sendTime);
 	
 	
 	/**
 	 * 扫描应该应该确认的,然后询问一次
 	 */
-	void scanAndConfirm();
+	void scanAndConfirm(Integer  confirmTime);
 	
 	
 	/**
@@ -51,7 +52,7 @@ public interface MessageServiceLocal extends MessageService {
 	 * @param uuid
 	 * @return
 	 */
-	int confirmMessage(String uuid );
+	int confirmFailureMessage(String uuid );
 
 
 	/**
@@ -61,5 +62,24 @@ public interface MessageServiceLocal extends MessageService {
 	void addSendRecord(Message message, SendStatus sendStatus);
 	
 	
-
+	/**
+	 * 发送http 请求 
+	 * @param message
+	 * @return
+	 */
+	ConfirmStatus httpInvoking(Message  message);
+	
+	/**
+	 * 添加确认发送记录
+	 * @param uuid
+	 * @param confirmStatus
+	 */
+	void addConfirmRecord(String uuid, ConfirmStatus confirmStatus);
+	
+	/**
+	 * 确认以后
+	 * @param confirmStatus
+	 * @param uuid
+	 */
+	void afterConfirm(ConfirmStatus confirmStatus, String uuid);
 }

@@ -1,5 +1,7 @@
 package com.smtmvc.messageService;
 
+import java.util.Properties;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -9,10 +11,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
-import com.smtmvc.messageService.mq.ActiveMQService;
-import com.smtmvc.messageService.mq.ServiceHolder;
+import com.github.pagehelper.PageHelper;
+import com.smtmvc.messageService.config.ReliableMessageRetry;
+import com.smtmvc.messageService.holder.PropertyHolder;
+import com.smtmvc.messageService.holder.ServiceHolder;
 import com.smtmvc.messageService.service.MessageServiceLocal;
-import com.smtmvc.messageService.task.ReSendTasks;
+import com.smtmvc.messageService.service.mq.ActiveMQService;
+import com.smtmvc.messageService.task.MessageTasks;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -26,6 +31,9 @@ public class MessageServiceApplication {
 		
 		ServiceHolder.setActiveMQService( app.getBean( ActiveMQService.class ) );
 		ServiceHolder.setMessageService( app.getBean( MessageServiceLocal.class ) );
+		
+		
+		PropertyHolder.setReliableMessageRetry( app.getBean( ReliableMessageRetry.class ) );
 	}
 	
 	@Bean
@@ -34,9 +42,22 @@ public class MessageServiceApplication {
 	}
 	
 	@Bean
-	public ReSendTasks confirmTasks() {
-		return new ReSendTasks();
+	public MessageTasks messageTasks() {
+		return new MessageTasks();
 	}
+	
+	
+	@Bean
+    public PageHelper pageHelper(){
+        PageHelper pageHelper = new PageHelper();
+        Properties properties = new Properties();
+        properties.setProperty("offsetAsPageNum","true");
+        properties.setProperty("rowBoundsWithCount","true");
+        properties.setProperty("reasonable","true");
+        properties.setProperty("dialect","mysql");    //配置mysql数据库的方言
+        pageHelper.setProperties(properties);
+        return pageHelper;
+    }
 	
 	
 }

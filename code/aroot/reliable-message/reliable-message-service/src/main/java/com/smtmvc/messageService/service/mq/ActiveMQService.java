@@ -1,4 +1,4 @@
-package com.smtmvc.messageService.mq;
+package com.smtmvc.messageService.service.mq;
 
 import javax.jms.Destination;
 

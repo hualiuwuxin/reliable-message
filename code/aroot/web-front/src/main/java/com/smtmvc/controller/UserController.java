@@ -56,7 +56,7 @@ public class UserController {
 		Long orderId = orderService.insert(order);
 		
 		System.out.println(   messageService );
-		messageService.confirmSend( message.getUuid() );
+		//messageService.confirmSend( message.getUuid() );
 		
 		
 		return "orderId:" +orderId ;

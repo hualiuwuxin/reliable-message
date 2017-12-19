@@ -7,6 +7,14 @@ import com.smtmvc.messageService.model.enume.MessageStatus;
 
 public class Message implements Serializable {
 
+	@Override
+	public String toString() {
+		return "Message [id=" + id + ", dr=" + dr + ", createDate=" + createDate + ", updateDate=" + updateDate
+				+ ", destination=" + destination + ", type=" + type + ", status=" + status + ", sendTime=" + sendTime
+				+ ", confirmTime=" + confirmTime + ", confirmUrl=" + confirmUrl + ", uuid=" + uuid + ", content="
+				+ content + "]";
+	}
+
 	private static final long serialVersionUID = -7482266728146094335L;
 
 	private Long id;

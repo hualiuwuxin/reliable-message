@@ -3,6 +3,11 @@ server:
 spring:
   application:
     name: web-front
+  datasource: 
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/good?characterEncoding=utf8&useSSL=true
+    username: root
+    password: root
 eureka:
   client:
     service-url:

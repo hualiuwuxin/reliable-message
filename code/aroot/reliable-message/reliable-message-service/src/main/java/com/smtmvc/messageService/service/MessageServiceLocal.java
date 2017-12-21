@@ -27,20 +27,24 @@ public interface MessageServiceLocal extends MessageService {
 	
 	/**
 	 * 扫描应该应该确认的,然后询问一次
+	 * 
+	 * @param confirmTime 确认次数
 	 */
 	void scanAndConfirm(Integer  confirmTime);
 	
 	
 	/**
 	 * 删除消息
+	 * 
 	 * @param uuid
 	 * @return 影响条数
 	 */
 	int deleteMessage( String uuid );
 	
 	/**
-	 * 发送失败
+	 * 标记消息发送失败
 	 * 
+	 * @param uuid
 	 * @return
 	 */
 	int sendFailure(String uuid );
@@ -54,16 +58,18 @@ public interface MessageServiceLocal extends MessageService {
 	 */
 	int confirmFailureMessage(String uuid );
 
-
 	/**
 	 * 做发送记录
-	 * @param message
+	 * 
+	 * @param message 消息
+	 * @param sendStatus 发送状态
 	 */
 	void addSendRecord(Message message, SendStatus sendStatus);
 	
 	
 	/**
 	 * 发送http 请求 
+	 * 
 	 * @param message
 	 * @return
 	 */
@@ -71,14 +77,16 @@ public interface MessageServiceLocal extends MessageService {
 	
 	/**
 	 * 添加确认发送记录
-	 * @param uuid
-	 * @param confirmStatus
+	 * 
+	 * @param uuid 
+	 * @param confirmStatus 确认的回执状态
 	 */
 	void addConfirmRecord(String uuid, ConfirmStatus confirmStatus);
 	
 	/**
-	 * 确认以后
-	 * @param confirmStatus
+	 * 完成确认的后续操作(比如 添加确认发送记录，发送信息到消息队列 )
+	 * 
+	 * @param confirmStatus 确认的回执状态
 	 * @param uuid
 	 */
 	void afterConfirm(ConfirmStatus confirmStatus, String uuid);

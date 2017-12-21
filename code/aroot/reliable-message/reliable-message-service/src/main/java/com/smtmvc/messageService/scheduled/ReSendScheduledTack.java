@@ -13,32 +13,32 @@ public class ReSendScheduledTack {
 	MessageServiceLocal messageService;
 
 
-	@Scheduled(fixedRate=1*60*1000 )
+	@Scheduled(fixedRate=1*60*1000,initialDelay=30 )
 	public void cronSend1() {
 		messageService.scanAndReSendToMQ(1);
 	}
 
-	@Scheduled(fixedRate=2*60*1000 )
+	@Scheduled(fixedRate=2*60*1000,initialDelay=35 )
 	public void cronSend2() {
 		messageService.scanAndReSendToMQ(2);
 	}
 
-	@Scheduled(fixedRate=5*60*1000 )
+	@Scheduled(fixedRate=5*60*1000,initialDelay=40 )
 	public void cronSend3() {
 		messageService.scanAndReSendToMQ(3);
 	}
 
-	@Scheduled(fixedRate=10*60*1000 )
+	@Scheduled(fixedRate=10*60*1000,initialDelay=45 )
 	public void cronSend4() {
 		messageService.scanAndReSendToMQ(4);
 	}
 
-	@Scheduled(fixedRate=30*60*1000 )
+	@Scheduled(fixedRate=30*60*1000,initialDelay=50 )
 	public void cronSend5() {
 		messageService.scanAndReSendToMQ(5);
 	}
 
-	@Scheduled(fixedRate=60*60*1000 )
+	@Scheduled(fixedRate=60*60*1000,initialDelay=55 )
 	public void cronSend6() {
 		messageService.scanAndReSendToMQ(6);
 	}

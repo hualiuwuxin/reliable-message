@@ -7,18 +7,17 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "reliableMessage.retry")
 public class ReliableMessageRetry {
 	
-	/**
-	 * 最大确认次数
-	 */
+	
 	private int maxConfirmTime;
 	
 	
-	/**
-	 * 最大重发次数
-	 */
+	
 	private int maxSendTime;
 
 
+	/**
+	 * 最大确认次数
+	 */
 	public int getMaxConfirmTime() {
 		return maxConfirmTime;
 	}
@@ -28,7 +27,10 @@ public class ReliableMessageRetry {
 		this.maxConfirmTime = maxConfirmTime;
 	}
 
-
+	
+	/**
+	 * 最大重发次数
+	 */
 	public int getMaxSendTime() {
 		return maxSendTime;
 	}

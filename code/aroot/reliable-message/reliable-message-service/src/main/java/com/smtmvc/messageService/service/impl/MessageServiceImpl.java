@@ -93,18 +93,17 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	@PutMapping("ack")
 	@Override
 	@Transactional
-	public void ack(@RequestBody String messageUUID)  {
-		Message messgae = 	messageMapper.selectByUUID( messageUUID );
+	public void ack(@RequestBody String uuid)  {
+		Message messgae = 	messageMapper.selectByUUID( uuid );
 		if(  messgae == null ) {
 			throw new RuntimeException("无效的UUID");
 		}
 		
-		messageMapper.changeStatus(messageUUID,MessageStatus.SEND_SUCCEED);
+		messageMapper.changeStatus(uuid,MessageStatus.SEND_SUCCEED);
 	}
 
 	@Override
 	public void sendToMQ(Message message)  {
-		
 		
 		if( message.getSendTime() >= reliableMessageRetry.getMaxSendTime() ) {
 			sendFailure( message.getUuid() );
@@ -148,7 +147,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	        page = (Page<Message>)  messageMapper.querySendedByStatus( MessageStatus.SENDED,sendTime );
 	        
 			for(Message message :  page) {
-				//sendToMQ(message);
+				sendToMQ(message);
 			}
 		}while( page.getEndRow() < page.getTotal() );
 		
@@ -173,7 +172,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	        page = (Page<Message>)messageMapper.queryWaitingConfirmByStatus( MessageStatus.WAITING_CONFIRM , confirmTime );
 	        
 	        for(Message message : page  ) {
-				tryConfirm( message );
+				tryConfirm( message);
 			}
 			 
 		}while( page.getEndRow() < page.getTotal() );
@@ -186,7 +185,7 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	 * 没有打到最大尝试次数的就去确认,到达最大次数的就标记未过期
 	 * @param message
 	 */
-	private void tryConfirm(Message message  ) {
+	private void tryConfirm(Message message ) {
 		
 		ConfirmMessageTask confirmMessageTask = new ConfirmMessageTask( message );
 		
@@ -231,12 +230,11 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	@Override
 	public void addConfirmRecord(String uuid, ConfirmStatus confirmStatus) {
 		Message messgae = 	messageMapper.selectByUUID( uuid );
-		if(  messgae == null ) {
-			throw new RuntimeException("无效的UUID");
+		
+		if(  messgae != null ) {
+			messageMapper.addConfirmTime( uuid );
+			messgae.setConfirmTime( messgae.getConfirmTime() + 1 );
 		}
-
-		messageMapper.addConfirmTime( uuid );
-		messgae.setConfirmTime( messgae.getConfirmTime() + 1 );
 		
 		MessageConfirmRecord messageConfirmRecord = MessageConfirmRecord.newInstance(messgae);
 		messageConfirmRecord.setStatus(  confirmStatus  );
@@ -248,6 +246,8 @@ public class MessageServiceImpl implements MessageServiceLocal {
 	@Override
 	public ConfirmStatus httpInvoking(Message  message) {
 		String url ="http://" + message.getConfirmUrl()+"/" + message.getUuid();
+		
+		System.out.println( "我调用了：" + url );
 		
 		System.out.println( "http 请求已发送:" + url );
 		return restTemplate.getForObject(url, ConfirmStatus.class );

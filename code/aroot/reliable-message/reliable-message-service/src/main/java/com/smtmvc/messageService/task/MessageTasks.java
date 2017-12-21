@@ -18,7 +18,7 @@ public class MessageTasks implements Runnable {
 	/**
 	 * 执行消息任务的线程池
 	 */
-	private static ExecutorService confirmThreadPool = Executors.newFixedThreadPool(10);
+	private static ExecutorService messageTackThreadPool = Executors.newFixedThreadPool(10);
 	
 	
 	
@@ -46,7 +46,7 @@ public class MessageTasks implements Runnable {
 			MessageTask messageTask;
 			try {
 				messageTask = MessageTasks.getTasks().take();
-				confirmThreadPool.execute( messageTask  );
+				messageTackThreadPool.execute( messageTask  );
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

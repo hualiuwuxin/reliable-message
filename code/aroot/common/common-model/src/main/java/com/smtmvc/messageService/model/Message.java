@@ -7,13 +7,6 @@ import com.smtmvc.messageService.model.enume.MessageStatus;
 
 public class Message implements Serializable {
 
-	@Override
-	public String toString() {
-		return "Message [id=" + id + ", dr=" + dr + ", createDate=" + createDate + ", updateDate=" + updateDate
-				+ ", destination=" + destination + ", type=" + type + ", status=" + status + ", sendTime=" + sendTime
-				+ ", confirmTime=" + confirmTime + ", confirmUrl=" + confirmUrl + ", uuid=" + uuid + ", content="
-				+ content + "]";
-	}
 
 	private static final long serialVersionUID = -7482266728146094335L;
 
@@ -24,7 +17,7 @@ public class Message implements Serializable {
     private Date createDate;
 
     private Date updateDate;
-
+    
     private String destination;
 
     private String type;
@@ -139,6 +132,14 @@ public class Message implements Serializable {
 	}
 	
 	@Override
+	public String toString() {
+		return "Message [id=" + id + ", dr=" + dr + ", createDate=" + createDate + ", updateDate=" + updateDate
+				+ ", destination=" + destination + ", type=" + type + ", status=" + status + ", sendTime=" + sendTime
+				+ ", confirmTime=" + confirmTime + ", confirmUrl=" + confirmUrl + ", uuid=" + uuid + ", content="
+				+ content + "]";
+	}
+	
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -173,4 +174,23 @@ public class Message implements Serializable {
 		
 		return message;
 	}
+	
+	
+	public static Message newInstance(String destination ,String confirmUrl ,String content,String uuid) {
+		Message message = new Message();
+		message.setType("queue");
+		message.setSendTime(0);
+		message.setConfirmTime(0);
+		message.setStatus( MessageStatus.WAITING_CONFIRM );
+		
+		
+		message.setDestination(destination );
+		message.setConfirmUrl(confirmUrl );
+		message.setContent(  content );
+		message.setUuid( uuid );
+		
+		return message;
+	}
+	
+	
 }

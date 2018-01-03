@@ -8,11 +8,11 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableEurekaClient
-@EnableFeignClients
+@EnableFeignClients 
 @EnableCircuitBreaker
 public class WebFrontApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {  
 		SpringApplication.run(WebFrontApplication.class, args);
 	}
 }
